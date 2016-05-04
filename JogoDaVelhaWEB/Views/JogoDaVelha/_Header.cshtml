@@ -1,0 +1,41 @@
+﻿@model JogoDaVelhaWEB.Models.Jogo
+@{
+    Layout = null;
+}
+<div class="linha">
+    <div class="icon left">
+        <span class="icone"></span>
+    </div>
+    <div class="titulo">
+        <span>Tic Tac Toe</span>
+    </div>
+    <div class="icon right">
+        <span class="icone"></span>
+    </div>
+</div>
+<div class="row">
+     <div class="col-lg-4">
+         <input class="form-control " type="text" id="txtPlayer1" name="player1"  placeholder="Player1"/>
+     </div>
+     <div class="col-lg-4">
+         <button class="btn btn-success form-control" type="button" id="btnIniciar">Start</button>
+     </div>
+     <div class="col-lg-4">
+         <input class="form-control" type="text" id="txtPlayer2" name="player2"  placeholder="Player2"/>
+     </div>
+ </div>
+
+<script>
+    $("#btnIniciar").click(function () {
+        $.get("@Url.Action("IniciarJogo","JogoDaVelha")",{
+            player1: $("#txtPlayer1").val(),
+            player2: $("#txtPlayer2").val()
+        }).success(function (data) {
+            $("#divHeader").slideUp(200, function () {
+                $("#divJogo").html(data).slideDown(200);
+            }).empty();
+        }).error(function (xhr) {
+            toastr.error(xhr.responseText);
+        });
+    });
+</script>

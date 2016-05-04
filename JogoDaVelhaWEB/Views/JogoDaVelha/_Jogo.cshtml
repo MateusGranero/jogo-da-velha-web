@@ -1,0 +1,136 @@
+﻿@model JogoDaVelhaWEB.Models.Jogo
+@{
+    Layout = null;
+}
+<input type="hidden" value="X" id="XO"/>
+@using (Html.BeginForm())
+{
+    <div class="row">
+        <div class="col-lg-4">
+            <input class="form-control jogadorAtivo" data-player="X" type="text" readonly="readonly" id="txtPlayer1" name="Player1" placeholder="Player1" value="@Model.Player1"/>
+        </div>
+        <div class="col-lg-4">
+            X
+        </div>
+        <div class="col-lg-4">
+            <input class="form-control" type="text" data-player="O" id="txtPlayer2" readonly="readonly" name="Player2" placeholder="Player2" value="@Model.Player2"/>
+        </div>
+    </div>
+}
+<div class="jogo">
+    <div class="linha">
+        <div id="A-1" class="botao disponivel"></div>
+        <div id="A-2" class="botao disponivel"></div>
+        <div id="A-3" class="botao disponivel"></div>
+    </div>
+
+    <div class="linha">
+        <div id="B-1" class="botao disponivel"></div>
+        <div id="B-2" class="botao disponivel"></div>
+        <div id="B-3" class="botao disponivel"></div>
+    </div>
+
+    <div class="linha">
+        <div id="C-1" class="botao disponivel"></div>
+        <div id="C-2" class="botao disponivel"></div>
+        <div id="C-3" class="botao disponivel"></div>
+    </div>
+</div>
+    <div class="row">
+        <div class="col-lg-4">
+            <button class="btn btn-danger form-control" type="button" id="btnVoltar">Voltar</button>
+        </div>
+        <div class="col-lg-4"></div>
+        <div class="col-lg-4">
+            <button class="btn btn-success form-control" type="button" id="btnNovo">Novo Jogo</button>
+        </div>
+    </div>
+<script>
+    $("#btnVoltar").click(function () {
+        $.get("@Url.Action("Index","JogoDaVelha")").success(function (data) {
+            $("#divJogo").slideUp(200, function () {
+                $("#divHeader").html(data).slideDown(200);
+            }).empty();
+        }).error(function (hrx) {
+            toastr.error(hrx.responseText);
+        });
+    });
+
+    function trocarJogador(daVez) {
+        $('[data-player]').removeClass('jogadorAtivo');
+        $('[data-player=' + daVez + ']').addClass('jogadorAtivo');
+    };
+
+    $(document).on("click",".botao.disponivel",function () {
+        $(this).removeClass("disponivel")
+            .addClass("selecionado");
+            
+        if ($("#XO").val() == "X") {
+
+            $(this).text("X");
+            $("#XO").val("O");
+
+        } else {
+            $(this).text("O");
+            $("#XO").val("X");
+        }
+        if (verificaJogo() == "fim") {
+            $(".disponivel").removeClass("disponivel").addClass("selecionado");
+            $("#XO").val($(".jogadorAtivo").attr("data-player"));
+            toastr.success("Parabéns " + $(".jogadorAtivo").val() + " você ganhou!");
+            return ;
+        }else if (verificaJogo() == "empate") {
+            toastr.warning("Deu empate! Comece outro Jogo!");
+        }
+        trocarJogador($("#XO").val());
+    });
+
+    $("#btnNovo").click(function() {
+        $(".botao").removeClass("selecionado")
+            .removeClass("ganhadores")
+            .addClass("disponivel")
+            .text("");
+    });
+
+    function fim(ids) {
+        $(ids).addClass("ganhadores");
+        rotation();
+        return "fim";
+    };
+
+    function verificaJogo() {
+        var empate = $(".selecionado");
+        if (empate.length == 9) {
+            return "empate";
+        }
+        if ((($("#A-1").text() == $("#A-2").text()) && ($("#A-1").text() == $("#A-3").text())) && ($("#A-1").text() != ""))
+            return fim("#A-1,#A-2,#A-3");
+        if ((($("#B-1").text() == $("#B-2").text()) && ($("#B-1").text() == $("#B-3").text())) && ($("#B-1").text() != ""))
+            return fim("#B-1,#B-2,#B-3");
+        if ((($("#C-1").text() == $("#C-2").text()) && ($("#C-1").text() == $("#C-3").text())) && ($("#C-1").text() != ""))
+            return fim("#C-1,#C-2,#C-3");
+        if ((($("#A-1").text() == $("#B-1").text()) && ($("#A-1").text() == $("#C-1").text())) && ($("#A-1").text() != ""))
+            return fim("#A-1, #B-1,#C-1");
+        if ((($("#A-2").text() == $("#B-2").text()) && ($("#A-2").text() == $("#C-2").text())) && ($("#A-2").text() != ""))
+            return fim("#A-2,#B-2,#C-2");
+        if ((($("#A-3").text() == $("#B-3").text()) && ($("#A-3").text() == $("#C-3").text())) && ($("#A-3").text() != ""))
+            return fim("#A-3,#B-2,#C-3");
+        if ((($("#A-1").text() == $("#B-2").text()) && ($("#A-1").text() == $("#C-3").text())) && ($("#A-1").text() != ""))
+            return fim("#A-1,#B-2,#C-3");
+        if ((($("#A-3").text() == $("#B-2").text()) && ($("#A-3").text() == $("#C-1").text())) && ($("#A-3").text() != ""))
+            return fim("#A-3,#B-2,#C-1");
+
+        return false;
+    }
+
+    var rotation = function () {
+        $(".ganhadores").rotate({
+            angle: 0,
+            animateTo: 360,
+            callback: rotation,
+            easing: function (x, t, b, c, d) {        // t: current time, b: begInnIng value, c: change In value, d: duration
+                return c * (t / d) + b;
+            }
+        });
+    }
+</script>
